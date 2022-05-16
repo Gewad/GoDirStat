@@ -4,8 +4,8 @@ import (
 	"fmt"
 	"io/fs"
 	"io/ioutil"
-	"log"
 	"strings"
+	"time"
 )
 
 type FileInfo struct {
@@ -30,7 +30,9 @@ type RootInfo struct {
 func GetDirInfo(dirString string, size int) DirInfo {
 	items, err := ioutil.ReadDir(dirString)
 	if err != nil {
-		log.Fatal(err)
+		message := dirString + " - " + err.Error()
+		fmt.Println(message)
+		return DirInfo{}
 	}
 
 	dir := DirInfo{
@@ -70,6 +72,13 @@ func GetDirFiles(items []fs.FileInfo) []FileInfo {
 
 func CalculateTotalSize(dir DirInfo) int {
 	totalSize := 0
+	for _, dir := range dir.dirs {
+		totalSize += int(dir.size)
+	}
+
+	for _, file := range dir.files {
+		totalSize += int(file.size)
+	}
 
 	return totalSize
 }
@@ -82,7 +91,9 @@ func GetNameFromDir(dir string) string {
 func GetRootInfo(dir string) RootInfo {
 	items, err := ioutil.ReadDir(dir)
 	if err != nil {
-		log.Fatal(err)
+		message := dir + " - " + err.Error()
+		fmt.Println(message)
+		return RootInfo{}
 	}
 
 	var dirs []DirInfo
@@ -110,6 +121,10 @@ func GetRootInfo(dir string) RootInfo {
 }
 
 func main() {
-	root := GetRootInfo("/home/g/")
+	begin := time.Now()
+	root := GetRootInfo("./dat/")
+	end := time.Now()
+	fmt.Println(end.Sub(begin).Milliseconds())
 	fmt.Println(root.size)
+	fmt.Println(root)
 }
