@@ -17,3 +17,5 @@
 # Binaries for the Go build system
 bin/
 assignments/
+
+temp/
