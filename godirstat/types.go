@@ -6,33 +6,29 @@ import (
 )
 
 type FileInfo struct {
-	name string
-	size int
+	Name string
+	Size int
 }
 
 type DirInfo struct {
-	name       string
-	size       int
-	files      []FileInfo
-	totalFiles int
-	dirs       []DirInfo
-	totalDirs  int
-}
-
-func (dir *DirInfo) SetName(name string) {
-	dir.name = name
+	Name       string
+	Size       int
+	Files      []FileInfo
+	TotalFiles int
+	Dirs       []DirInfo
+	TotalDirs  int
 }
 
 func (dir *DirInfo) SortDirsAndFiles() {
-	sort.Slice(dir.dirs, func(i, j int) bool {
-		return dir.dirs[i].size > dir.dirs[j].size
+	sort.Slice(dir.Dirs, func(i, j int) bool {
+		return dir.Dirs[i].Size > dir.Dirs[j].Size
 	})
 
-	sort.Slice(dir.files, func(i, j int) bool {
-		return dir.files[i].size > dir.files[j].size
+	sort.Slice(dir.Files, func(i, j int) bool {
+		return dir.Files[i].Size > dir.Files[j].Size
 	})
 
-	for _, dir := range dir.dirs {
+	for _, dir := range dir.Dirs {
 		dir.SortDirsAndFiles()
 	}
 }
@@ -41,22 +37,22 @@ func (dir *DirInfo) PrintContents(level int, max_depth int) {
 	prefix_dir := string(make([]rune, (3*level))) + " - "
 	prefix_files := string(make([]rune, (3*(level+1)))) + " - "
 
-	fmt.Printf(prefix_dir+dir.name+" = %d bytes\n", dir.size)
+	fmt.Printf(prefix_dir+dir.Name+" = %d bytes\n", dir.Size)
 
 	// Return small summary when max depth is reached
 	// Max depth of -1 or smaller means infinite depth
 	if level > max_depth && max_depth > -1 {
 		prefix_summary := string(make([]rune, (3*(level+1)))) + " + "
-		fmt.Printf(prefix_summary+"%d more dirs and %d more files\n", dir.totalDirs, dir.totalFiles)
+		fmt.Printf(prefix_summary+"%d more dirs and %d more files\n", dir.TotalDirs, dir.TotalFiles)
 		return
 	}
 
-	for _, dir := range dir.dirs {
+	for _, dir := range dir.Dirs {
 		dir.PrintContents(level+1, max_depth)
 	}
 
 	// Create prefix with 3 spaces per level
-	for _, file := range dir.files {
-		fmt.Printf(prefix_files+file.name+" = %d bytes\n", file.size)
+	for _, file := range dir.Files {
+		fmt.Printf(prefix_files+file.Name+" = %d bytes\n", file.Size)
 	}
 }

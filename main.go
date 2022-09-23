@@ -16,7 +16,6 @@ func main() {
 	begin := time.Now()
 	root := godirstat.GetDirInfo(*dirPtr, 0)
 	root.SortDirsAndFiles()
-	root.SetName(*dirPtr)
 	end := time.Now()
 
 	fmt.Printf("Scan complete for folder: %s\n", *dirPtr)
