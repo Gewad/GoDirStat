@@ -3,24 +3,38 @@ package godirstat
 import (
 	"fmt"
 	"io/fs"
-	"io/ioutil"
 	"os"
 	"strings"
 )
 
+type Config struct {
+	FnReadDir func(string) ([]fs.DirEntry, error)
+}
+
+var defaultConfig = Config{
+	FnReadDir: os.ReadDir,
+}
+
 func GetDirInfo(dirString string, size int) DirInfo {
-	items, err := ioutil.ReadDir(dirString)
+	return GetDirInfoWithConfig(dirString, size, defaultConfig)
+}
+
+func GetDirInfoWithConfig(dirString string, size int, config Config) DirInfo {
+	entries, err := config.FnReadDir(dirString)
+
 	if err != nil {
 		message := dirString + " - " + err.Error()
 		fmt.Println(message)
 		return DirInfo{}
 	}
 
+	items := convertToFileInfo(entries)
+
 	dir := DirInfo{
 		Name:  getNameFromDir(dirString),
 		Size:  size,
 		Files: getDirFiles(items),
-		Dirs:  getDirDirs(items, dirString)}
+		Dirs:  getDirDirs(items, dirString, config)}
 
 	if dir.Name == "." {
 		wd, err := os.Getwd()
@@ -38,13 +52,21 @@ func GetDirInfo(dirString string, size int) DirInfo {
 	return dir
 }
 
-func getDirDirs(items []fs.FileInfo, dirStringPrev string) []DirInfo {
+func convertToFileInfo(items []fs.DirEntry) []fs.FileInfo {
+	converted := make([]fs.FileInfo, len(items))
+	for i, v := range items {
+		converted[i], _ = v.Info()
+	}
+	return converted
+}
+
+func getDirDirs(items []fs.FileInfo, dirStringPrev string, config Config) []DirInfo {
 	var dirs []DirInfo
 
 	for _, item := range items {
 		if item.IsDir() {
 			dirString := dirStringPrev + "/" + item.Name()
-			dirs = append(dirs, GetDirInfo(dirString, int(item.Size())))
+			dirs = append(dirs, GetDirInfoWithConfig(dirString, int(item.Size()), config))
 		}
 	}
 
